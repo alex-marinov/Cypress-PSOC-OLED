@@ -158,17 +158,27 @@ void display_init( uint8 i2caddr ){
 static uint32 display_write_buf( uint8* buf, uint16_t size ){
 
     uint32 status = TRANSFER_ERROR;
-
-    I2COLED_I2CMasterWriteBuf(_i2caddr, buf, size, I2COLED_I2C_MODE_COMPLETE_XFER);
-    while( 0u == (I2COLED_I2CMasterStatus() & I2COLED_I2C_MSTAT_WR_CMPLT) );
-
-    if( 0u == (I2COLED_I2C_MSTAT_ERR_XFER & I2COLED_I2CMasterStatus()) ){
-        // Check if all bytes was written 
-        if( I2COLED_I2CMasterGetWriteBufSize() == size ){
-            status = TRANSFER_CMPLT;
-        }
+    
+    I2COLED_MasterSendStart(_i2caddr,I2COLED_WRITE_XFER_MODE);
+    
+    uint8_t i;
+    for (i = 0; i < size; i++)
+    {
+        status = I2COLED_MasterWriteByte(buf[i]);
     }
-    I2COLED_I2CMasterClearStatus();
+    
+    I2COLED_MasterSendStop();
+
+    //I2COLED_I2CMasterWriteBuf(_i2caddr, buf, size, I2COLED_I2C_MODE_COMPLETE_XFER);
+    //while( 0u == (I2COLED_I2CMasterStatus() & I2COLED_I2C_MSTAT_WR_CMPLT) );
+
+    //if( 0u == (I2COLED_I2C_MSTAT_ERR_XFER & I2COLED_I2CMasterStatus()) ){
+        // Check if all bytes was written 
+    //    if( I2COLED_I2CMasterGetWriteBufSize() == size ){
+    //        status = TRANSFER_CMPLT;
+    //    }
+    //}
+    //I2COLED_I2CMasterClearStatus();
 
     return status;
 }
